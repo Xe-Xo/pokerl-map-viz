@@ -166,11 +166,29 @@ PIXI.Assets.load([
         const ws = new WebSocket('wss://poke-ws-test-ulsjzjzwpa-ue.a.run.app/receive');
         ws.onmessage = function(event) {
             const data = JSON.parse(event.data); // Assuming the data is JSON-encoded
-            const path = data["coords"];
             const meta = data["metadata"];
-            console.log(meta);
+            const path = data["coords"];
+            const battle = data["battle"];
+            const highlights = data["highlights"]
+
+            if (meta === undefined) {
+                console.log("No metadata provided in WebSocket message.");
+            }
+
+            if (path === undefined) {
+                console.log("No path provided in WebSocket message.");
+            }
+
+            if (battle === undefined) {
+                console.log("No battle provided in WebSocket message.");
+            }
+
+            if (highlights === undefined) {
+                console.log("No highlights provided in WebSocket message.");
+            }
+
             if (Date.now() - lastFrameTime < 2 * animationDuration) {
-                startAnimationForPath(path, meta);
+                startAnimationForPath(meta, path, battle);
             }
         };
         return ws;
@@ -194,7 +212,7 @@ PIXI.Assets.load([
 
     let activeSprites = [];
 
-    function startAnimationForPath(path, meta) {
+    function startAnimationForPath(meta, path, battle) {
         const sprite = new PIXI.Sprite(textureChar);
         //sprite.x = charOffset * 40; 
         sprite.anchor.set(0.5);
@@ -220,11 +238,28 @@ PIXI.Assets.load([
             label.x = sprite.x + sprite.width * 0.5; // Position the label next to the sprite
             label.y -= sprite.height; // Adjust the label position as needed
             subContainer.addChild(label);
+
+
+            
         }
+        
+        if (path !== undefined) {
 
-        container.addChild(subContainer);
+            // Battle is optional, but if it's provided, it must be an array of the same length as path
 
-        activeSprites.push({ subContainer, path, startTime: null });
+            let battle_update = [0] * path.length;
+
+            if (battle !== undefined && battle.length === path.length) {
+                battle_update = battle;
+            }
+
+
+            container.addChild(subContainer);
+            activeSprites.push({ subContainer, path, battle: battle_update, startTime: null});
+
+        };
+            
+
     }
 
     function animate(time) {
@@ -242,6 +277,16 @@ PIXI.Assets.load([
             const nextPoint = coordConversionFunc(obj.path[nextIndex]);
             obj.subContainer.x = 16*(currentPoint[0] + (nextPoint[0] - currentPoint[0]) * pointProgress);
             obj.subContainer.y = 16*(currentPoint[1] + (nextPoint[1] - currentPoint[1]) * pointProgress);
+
+            const currentBattle = obj.battle[currentIndex];
+            
+            if (currentBattle === 1) {
+                obj.subContainer.children[0].tint = 0xFA73D3;
+            } else {
+                obj.subContainer.children[0].tint = 0xFFFFFF;
+            }
+            
+
 
             if (progress >= 1) {
                 container.removeChild(obj.subContainer); // Remove sprite from the scene
