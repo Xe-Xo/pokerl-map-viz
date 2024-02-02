@@ -252,9 +252,21 @@ PIXI.Assets.load([
             subContainer.addChild(label);
         }
 
-        container.addChild(subContainer);
+        if (path !== undefined) {
 
-        activeSprites.push({ subContainer, path, startTime: null });
+            // Battle is optional, but if it's provided, it must be an array of the same length as path
+
+            let battle_update = [0] * path.length;
+
+            if (battle !== undefined && battle.length === path.length) {
+                battle_update = battle;
+            }
+
+
+            container.addChild(subContainer);
+            activeSprites.push({ subContainer, path, battle: battle_update, startTime: null});
+
+        };
     }
 
     function animate(time) {
