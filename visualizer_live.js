@@ -220,7 +220,10 @@ PIXI.Assets.load([
 
         const pathLength = path.length;
 
-        if (pathLength == 0) return;
+        if (path === undefined || pathLength == 0) return;
+        
+        const subContainer = new PIXI.Container();
+        container.addChild(subContainer);
 
         // Check if meta is defined and has a 'user' key
         if (meta && meta.user !== undefined && typeof(meta.user) === "string") {
@@ -231,8 +234,7 @@ PIXI.Assets.load([
             //sprite.x = charOffset * 40; 
             sprite.anchor.set(0.5);
             //sprite.scale.set(0.5); // Adjust scale as needed
-            const subContainer = new PIXI.Container();
-    
+            
             subContainer.addChild(sprite);
            
             // Create a text label
@@ -250,23 +252,29 @@ PIXI.Assets.load([
             label.x = sprite.x + sprite.width * 0.5; // Position the label next to the sprite
             label.y -= sprite.height; // Adjust the label position as needed
             subContainer.addChild(label);
+
+            if (path !== undefined) {
+
+                // Battle is optional, but if it's provided, it must be an array of the same length as path
+    
+                let battle_update = [0] * path.length;
+    
+                if (battle !== undefined && battle.length === path.length) {
+                    battle_update = battle;
+                }
+    
+    
+                
+                activeSprites.push({ subContainer, path, battle: battle_update, startTime: null});
+    
+            };
+
+
+
+
         }
 
-        if (path !== undefined) {
 
-            // Battle is optional, but if it's provided, it must be an array of the same length as path
-
-            let battle_update = [0] * path.length;
-
-            if (battle !== undefined && battle.length === path.length) {
-                battle_update = battle;
-            }
-
-
-            container.addChild(subContainer);
-            activeSprites.push({ subContainer, path, battle: battle_update, startTime: null});
-
-        };
     }
 
     function animate(time) {
